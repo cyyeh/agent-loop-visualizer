@@ -1,5 +1,5 @@
 /* Palette shared with the Unit 01 guide; each loop stage gets one color.
-   dark.css overrides the variables when Streamlit runs in dark mode; guide.py copies both into the 運作說明 page. */
+   dark.css overrides the variables when Streamlit runs in dark mode; docs/guide/guide.py copies both into the 運作說明 page. */
 :root {
   --surface: #fbf9f3;
   --sunk: #ebe5d6;

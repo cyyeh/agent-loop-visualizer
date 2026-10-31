@@ -103,7 +103,7 @@ def _not_a_kernel_notice(record: logging.LogRecord) -> bool:
     flash-linear-attention and causal-conv1d are missing. Neither is a dependency, so the notice is dropped on every
     device. Both need a CUDA GPU: on MPS or CPU there is nothing to install, and fla installed on a Linux machine
     without a GPU still gets picked and fails in the first forward pass. With a GPU the gain is small for a 0.8B
-    model (fla speeds up prefill only) and causal-conv1d has to be compiled; the README has the measurements."""
+    model (fla speeds up prefill only) and causal-conv1d has to be compiled; docs/limitations.md has the measurements."""
     return "falling back to its reference PyTorch implementation" not in record.getMessage()
 
 

@@ -3,12 +3,14 @@
 It is a static page on GitHub Pages, in Traditional Chinese and in English; the app's top bar links to
 the one in the app's language. Build it from the project's folder with
 
-    uv run python -m app.guide _site
+    uv run python -m docs.guide _site
 
 which writes _site/zh/index.html and _site/en/index.html, each one file with its styles and script
 inlined, and _site/index.html, which sends a reader on to the language they picked on the page's
 switch before, or else their browser's. On every push to main, .github/workflows/pages.yml runs
-tests/test_guide.py, then builds and publishes them.
+tests/test_guide.py, then builds and publishes them. This file lives in docs/guide/, beside the
+page's style (guide.css) and script (guide.js), under the project's other documentation; the palette,
+the dark theme and the logo it shares with the app stay in app/assets/.
 
 The content points at code by text, not by line number: Code("agent/harnesses/simple_harness.py", "def run(self):") is
 looked up in the file every time the page is built, so the line numbers on the page follow the
@@ -32,7 +34,6 @@ import base64
 import html
 import re
 import subprocess
-import sys
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
@@ -44,8 +45,9 @@ from pygments.lexers import get_lexer_for_filename
 from agent.i18n import LANGS, pick
 from app import render
 
-ROOT = Path(__file__).resolve().parent.parent  # the project's folder, which the files the guide quotes are named from
-ASSETS = Path(__file__).parent / "assets"
+ROOT = Path(__file__).resolve().parents[2]  # the project's folder, which the files the guide quotes are named from
+ASSETS = ROOT / "app" / "assets"  # the palette, the dark theme and the logo, which the page shares with the app
+HERE = Path(__file__).parent  # guide.css and guide.js, the page's own style and script
 REPO = "https://github.com/Agentic-System-Lab/agent-loop-visualizer"
 FONTS = "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap"
 HTML_LANG = {"zh": "zh-Hant", "en": "en"}
@@ -359,7 +361,7 @@ a { color: #2f5191; } @media (prefers-color-scheme: dark) { body { background: #
 
 
 def logo_url() -> str:
-    """The site's logo (assets/logo.svg, the app's too) as a data URL, so the page stays one file."""
+    """The site's logo (app/assets/logo.svg, the app's too) as a data URL, so the page stays one file."""
     return "data:image/svg+xml;base64," + base64.b64encode((ASSETS / "logo.svg").read_bytes()).decode()
 
 
@@ -383,7 +385,7 @@ def stylesheet() -> str:
     palette = re.search(r"^:root \{.*?^\}", (ASSETS / "style.css").read_text(encoding="utf-8"), re.S | re.M)
     assert palette, "style.css has no :root palette"
     dark = (ASSETS / "dark.css").read_text(encoding="utf-8")
-    return f"{palette.group()}\n@media (prefers-color-scheme: dark) {{\n{dark}}}\n{(ASSETS / 'guide.css').read_text(encoding='utf-8')}"
+    return f"{palette.group()}\n@media (prefers-color-scheme: dark) {{\n{dark}}}\n{(HERE / 'guide.css').read_text(encoding='utf-8')}"
 
 
 def document_html(commit: str, lang: str) -> str:
@@ -401,7 +403,7 @@ def document_html(commit: str, lang: str) -> str:
         f'<meta name="description" content="{description}">'
         f'<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="{FONTS}">'
         f"<style>\n{stylesheet()}</style></head><body>{page_html(commit, lang)}"
-        f"<script>\n{(ASSETS / 'guide.js').read_text(encoding='utf-8')}</script></body></html>\n"
+        f"<script>\n{(HERE / 'guide.js').read_text(encoding='utf-8')}</script></body></html>\n"
     )
 
 
@@ -553,12 +555,12 @@ SECTIONS = [
              "en": "`app/page.py`: the layout, the sidebar settings, the model menu and the background thread; it redraws every 0.5 s while a run is live."},
             {"zh": "`app/render.py`：把事件列表折成 step（[[app/render.py|def build(events: list[dict])]]），再畫成 HTML。",
              "en": "`app/render.py`: folds the event list into steps ([[app/render.py|def build(events: list[dict])]]) and draws them as HTML."},
-            {"zh": "`app/guide.py`：這一頁，從它引用的程式產生出來。",
-             "en": "`app/guide.py`: this page, built from the code it quotes."},
         ),
-        {"zh": "兩塊之外，`models/` 放下載的模型，每個模型一個資料夾，git 不追蹤（{{files}}）；`docker-compose/` 放畫面在 Docker 裡啟動 vLLM 用的設定（{{backends}}）。",
-         "en": "Beside the two, `models/` holds the downloaded models, one folder each, which git ignores ({{files}}), and `docker-compose/` what the page "
-               "starts vLLM in Docker from ({{backends}})."},
+        {"zh": "兩塊之外，`models/` 放下載的模型，每個模型一個資料夾，git 不追蹤（{{files}}）；`docker-compose/` 放畫面在 Docker 裡啟動 vLLM 用的設定（{{backends}}）；"
+               "`docs/` 放專案的說明文件，以及 `docs/guide/`：它用這一頁引用的程式產生這一頁。",
+         "en": "Beside the two, `models/` holds the downloaded models, one folder each, which git ignores ({{files}}), `docker-compose/` what the page "
+               "starts vLLM in Docker from ({{backends}}), and `docs/` the project's documentation, with `docs/guide/`, which builds this page "
+               "from the code it quotes."},
     )),
     Section("families", "model",
             {"zh": "模型家族：換模型只換這一層", "en": "Model families: switching models changes only this layer"},
@@ -2073,6 +2075,3 @@ EVENTS = [
      {"zh": "停止卡片；訊息列表成為下一輪的 `history`", "en": "the stop card; the message list becomes the next turn's `history`"}),
 ]
 
-
-if __name__ == "__main__":
-    print(*build(Path(sys.argv[1] if len(sys.argv) > 1 else "_site")), sep="\n")

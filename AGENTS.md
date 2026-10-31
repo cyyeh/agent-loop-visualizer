@@ -9,8 +9,10 @@ tool that runs in a Docker sandbox. The sidebar can also hand the loop to pi, a 
 either the page's own model (served to it over HTTP on 127.0.0.1, every token still drawn) or a model it has credentials
 for (drawn from what pi reports, without tokens). It is a teaching project for the
 Agent Atlas course. The page and its 運作說明 (How it works) guide are in Traditional Chinese and
-English. README.md (English) and README.zh-TW.md (Traditional Chinese) are the full account of what the
-page shows, the architecture, the tests and the known limits; read the parts you are about to change.
+English. README.md (English) and README.zh-TW.md (Traditional Chinese) are the overview and the quick start;
+docs/ is the full account (setup, the architecture and its events, decoding and MTP, attachments and the sandbox,
+vLLM, pi, the tests and the known limits), each page in English beside its .zh-TW.md twin in Chinese; read the
+parts you are about to change.
 
 ## Commands
 
@@ -18,7 +20,7 @@ page shows, the architecture, the tests and the known limits; read the parts you
 uv sync                                                    # Python 3.12 (.python-version), packages pinned by uv.lock; uv >= 0.13.4 (required-version in pyproject.toml)
 uv run pytest                                              # ~40 s; loads no weights, touches no network
 uv run ruff check                                          # lint, the order of imports included; --fix sorts them
-uv run mypy                                                # types: agent/ and app/ inside every function, tests/ where annotated
+uv run mypy                                                # types: agent/, app/ and docs/ inside every function, tests/ where annotated
 RUN_MODEL_TESTS=1 uv run pytest tests/test_real_model.py   # real Gemma (with its MTP drafter) and Qwen, ~4 min; -k Qwen for one
 docker build -t agent-loop-sandbox agent/sandbox           # optional: run_python's sandbox; its tests skip without it; bump SANDBOX_VERSION with the Dockerfile
 uv run streamlit run streamlit_app.py                      # http://localhost:8501; MODEL_ID=Qwen/Qwen3.5-0.8B starts on Qwen
@@ -27,14 +29,16 @@ VLLM_TEST_URL=http://localhost:8000 uv run pytest tests/test_vllm_backend.py -k 
 docker compose -f docker-compose/compose.yaml up -d        # the vLLM server the sidebar's vLLM (Docker) starts, by hand (+ -f docker-compose/compose.gpu.yaml on NVIDIA GPUs)
 RUN_VLLM_DOCKER_TESTS=1 uv run pytest tests/test_vllm_docker.py -k real   # starts that server with Qwen3.5 and asks it through VLLMBackend, ~2 min
 RUN_PI_TESTS=1 uv run pytest tests/test_pi_harness.py -k real   # the real pi (on the PATH, or PI_COMMAND; pi 1.4 needs Node 22.19+: `nvm install` installs the newest 22 .nvmrc names and switches to it) against a scripted model on 127.0.0.1
-uv run python -m app.guide _site                           # the guide: _site/zh/, _site/en/ and a redirecting _site/index.html
+uv run python -m docs.guide _site                          # the guide: _site/zh/, _site/en/ and a redirecting _site/index.html
 UPDATE_GUIDE_SNAPSHOT=1 uv run pytest tests/test_guide.py  # after rereading the guide sections a code change touched
 uv run --isolated --no-project --with pygments --with pytest pytest tests/test_guide.py   # the guide's tests as the Pages build runs them: pygments and pytest alone, not .venv
 ```
 
 The justfile gives these commands names for [just](https://github.com/casey/just) (`just` lists them, `just check` runs
 what checks.yml runs, `just download` the models at their `REVISIONS`). Each recipe is the command above, so nothing needs
-just; a change to a command here changes its recipe and the READMEs' "The commands by name" (用 just 跑這些指令) too.
+just. The READMEs' Quick start and docs/ run the recipes by name and give the command behind each (docs/setup.md's
+"The commands by name", 用 just 跑這些指令 in setup.zh-TW.md, docs/testing.md, docs/vllm.md and docs/architecture.md, each
+with its .zh-TW.md twin): a change to a command here changes its recipe and those lines too.
 
 Ruff lints and mypy checks types (both set up in pyproject.toml), and .github/workflows/checks.yml runs them and
 `uv run pytest` on every pull request and every push to main, and in a job of its own tests and builds the guide with
@@ -43,8 +47,8 @@ reformat lines you are not changing. Fix what the two report rather than silenci
 
 ## Layout
 
-Two packages: `agent/` runs a turn, `app/` is what a person sees. `app/` imports `agent/`, never the
-other way round.
+Two packages make the app: `agent/` runs a turn, `app/` is what a person sees. `app/` imports `agent/`, never the
+other way round. `docs/` is the documentation, and its `guide/` the 運作說明 page built from both.
 
 ```
 streamlit_app.py         where Streamlit starts: imports app.page and calls main() on every rerun
@@ -52,8 +56,7 @@ justfile                 the commands above by name, for just
 app/                     the Streamlit app
   page.py                layout, session state, model menu, background thread; redraws every 0.5 s while a run is live
   render.py              pure functions from the event list to HTML: loop diagram, step cards, token heat and popovers, context
-  guide.py               the 運作說明 page: content in both languages, code references by text, static HTML for GitHub Pages
-  assets/                style.css (palette and app), dark.css, guide.css, guide.js (the guide's one inlined script), logo.svg, examples/ (files the examples attach, also offered above the input box)
+  assets/                style.css (palette and app), dark.css, logo.svg (the guide inlines style.css's palette, dark.css and the logo), examples/ (files the examples attach, also offered above the input box)
 agent/                   the agent: the harnesses that run its loop, the model, what runs the model, the tools; no Streamlit
   harnesses/
     harness.py           Harness: what the page asks of whatever runs the loop (run, stop, decide), and the events every harness sends
@@ -72,6 +75,8 @@ agent/                   the agent: the harnesses that run its loop, the model, 
   i18n.py                the two languages: LANGS, pick(lang, zh, en), from_locale(); no dependencies
   sandbox/               run_python's sandbox image, agent-loop-sandbox: the Dockerfile, and the matplotlib backend (agent_loop_figures.py) and matplotlibrc that send charts back on stdout
 docker-compose/          the vLLM server vllm_docker.py starts: compose.yaml (CPU, any machine), compose.gpu.yaml (on top: NVIDIA GPUs), vllm-cpu/ (vLLM 0.32.0's CPU image + patch_vllm.py's two fixes)
+docs/                    the pages the READMEs link to, <name>.md in English beside <name>.zh-TW.md; the READMEs' screenshots
+  guide/                 the 運作說明 page: guide.py (content in both languages, code references by text, static HTML for GitHub Pages), guide.css, guide.js (its one inlined script); __main__.py makes it python -m docs.guide
 tests/                   pytest; fakes.py is a scripted stand-in for SimpleBackend; samples.py makes a file of every accepted format; guide_excerpts.txt is the code the guide quotes
 models/                  downloaded models (simple_backend.MODELS_DIR), which git ignores; AGENT_LOOP_MODELS moves them, HF_HUB_CACHE does not
 ```
@@ -83,7 +88,7 @@ import Backend`, `from app import render`); pytest puts that folder on the path 
 
 - **The agent never knows the app.** Nothing in `agent/` imports `app/`, Streamlit or anything that draws; it
   reports what happens only as events (tests/test_layout.py checks the imports). `agent/__init__.py`,
-  `agent/model_families/`, `agent/i18n.py` and `app/__init__.py` import nothing heavy, because the guide's build
+  `agent/model_families/`, `agent/i18n.py`, `app/__init__.py`, `docs/__init__.py` and `docs/guide/__init__.py` import nothing heavy, because the guide's build
   loads them with pygments alone.
 - **app/page.py is imported once, not run as a script.** streamlit_app.py imports it and calls `main()` on every
   rerun, so everything a rerun does is inside functions, and what the module reads from the environment (`VLLM_URL`,
@@ -91,10 +96,11 @@ import Backend`, `from app import render`); pytest puts that folder on the path 
   `page.UPLOADS`, `page.SimpleBackend`), not in the environment.
 - **Events are the interface.** The page runs a turn only through a `Harness` (harnesses/harness.py): `SimpleHarness`, or
   `PiHarness` with pi picked under What runs the loop. It runs in a background thread and appends one event per
-  stage; the order is in the READMEs' Architecture (架構) section. `app/render.py` is a pure function of that list and the
+  stage; the order is in docs/architecture.md (and architecture.zh-TW.md). `app/render.py` is a pure function of that list and the
   page only draws it, which is why stop and approve can rerun the script without interrupting the loop.
-  A new or changed event needs render.py, the `EVENTS` table in app/guide.py (tests check that it lists
-  every event either harness sends and points at the line that sends it) and the event list in both READMEs.
+  A new or changed event needs render.py, the `EVENTS` table in docs/guide/guide.py (tests check that it lists
+  every event either harness sends and points at the line that sends it) and the event list in docs/architecture.md and
+  architecture.zh-TW.md.
   Most events are optional (`harness.SOMETIMES`): pi sends `request` (what it sent the model), and on a provider's model
   no `context`, `prefill`, `token` or family but `delta`; on the page's model, model_endpoint.py sends those four into
   pi's step. render.py draws a step from what it has, never filling in what the harness did not see.
@@ -117,9 +123,9 @@ import Backend`, `from app import render`); pytest puts that folder on the path 
   something else: a processed --logprobs-mode is the sampling distribution, never the model's p.
 - **Escape everything the model writes** before it reaches `st.html`. tests/test_render.py checks it,
   and also that every prefix of a run's events renders, because the page redraws mid-run.
-- **app/guide.py finds code by text, not line number.** `Code("agent/harnesses/simple_harness.py", "def run(self):")` and inline
+- **docs/guide/guide.py finds code by text, not line number.** `Code("agent/harnesses/simple_harness.py", "def run(self):")` and inline
   `[[agent/harnesses/simple_harness.py|def run(self):]]` are looked up when the page is built, by their path from the project's folder,
-  and each must match exactly one line. Before renaming, moving or rewriting a line, grep app/guide.py for it; if a reference breaks,
+  and each must match exactly one line. Before renaming, moving or rewriting a line, grep docs/guide/guide.py for it; if a reference breaks,
   tests/test_guide.py fails. Fix the reference, and when the behavior changed, the prose around it too. A file that is not Python
   (docker-compose/compose.yaml) is quoted line by line, through the line with `end`. Where a part of a section differs by what
   runs the model, by the model, or by the harness, it goes in `Tabs`, one tab per backend, per model or per harness (`TAB_KINDS`:
@@ -130,11 +136,11 @@ import Backend`, `from app import render`); pytest puts that folder on the path 
   them, tests/test_guide.py fails and names the sections. Reread each one in both languages, fix
   what is no longer true, then rewrite the file with `UPDATE_GUIDE_SNAPSHOT=1 uv run pytest
   tests/test_guide.py` and commit it with the change. Never regenerate it without rereading.
-- **app/guide.py builds with pygments alone.** The Pages workflow runs
-  `uv run --isolated --no-project --with pygments python -m app.guide _site`, and guide.py imports app.render and
+- **docs/guide/guide.py builds with pygments alone.** The Pages workflow runs
+  `uv run --isolated --no-project --with pygments python -m docs.guide _site`, and guide.py imports app.render and
   agent.i18n, and render imports agent.model_families. Keep those (and the packages' `__init__.py`) free of torch,
   transformers, streamlit and httpx. Before building, it runs tests/test_guide.py with pygments and pytest alone,
-  so that file imports only app.guide, agent.i18n and tests/html_check.py (not test_render.py, which imports the
+  so that file imports only docs.guide.guide, agent.i18n and tests/html_check.py (not test_render.py, which imports the
   agent's harnesses and with them PyAV, NumPy, Pillow and httpx). `uv run pytest` has every package installed and
   cannot see a heavy import there, so checks.yml's `guide` job runs those two commands on every pull request;
   keep it the same as pages.yml.
@@ -220,7 +226,7 @@ import Backend`, `from app import render`); pytest puts that folder on the path 
 
 - Code, comments, docstrings, test names and commit messages are in English. So is the text the model
   reads (system prompts, tool schemas). What a person sees is in both Traditional Chinese with Taiwan
-  usage and English: UI strings, stop reasons, tool errors, the READMEs, the 運作說明 page. In Chinese,
+  usage and English: UI strings, stop reasons, tool errors, the READMEs and docs/, the 運作說明 page. In Chinese,
   use the terms the page already uses: 脈絡 for context, 模型, harness, 環境 for environment, 停止,
   工具, 特殊 token, 推測解碼, 滑動視窗 for sliding window, 隱藏層維度 for hidden size, 注意力頭 for
   attention head; keep token, prefill, KV cache, top-k and the like in English. In English,
@@ -234,12 +240,17 @@ import Backend`, `from app import render`); pytest puts that folder on the path 
 - Commit messages: an imperative subject that says what changed for the user, then a body on what and
   why; group bigger changes under short headings or `-` bullets.
 
-## Keep the README in step
+## Keep the READMEs and docs/ in step
 
-README.md (English) and README.zh-TW.md (Traditional Chinese) say the same things: the screens, the
-experiments, the architecture, the two languages, the decoding loop and MTP, a table of what each test
-file covers, measured speeds and known limitations. A change that makes any of it untrue updates both
-in the same commit, each in its own language and in the README's voice; each links to the other at the
-top. `docs/screenshot-en.png` and `docs/screenshot-zh.png` are their images, each showing the page in
-its README's language, taken from a real Gemma run: if a UI change makes them stale, say so rather than
-leaving them silently outdated.
+README.md (English) and README.zh-TW.md (Traditional Chinese) stay short: what the project is and does, what
+the page shows, the quick start, the experiments, a table of the pages in docs/, and the license. The detail
+lives in docs/, one page per topic, each `<name>.md` in English beside `<name>.zh-TW.md` in Chinese: setup
+(every requirement, where the models go, the commands by name), architecture (the layout, the event list, the
+two languages, adding a model, the models' formats), decoding (the decoding loop, MTP and its measured
+speeds), files (attachments and the sandbox), vllm, pi, testing (a table of what each test file covers) and
+limitations. Each pair says the same things. A change that makes any of it untrue updates both languages in
+the same commit, each in its own language and in the page's voice; each page links to its twin at the top
+and back to its README, and a new page goes into both READMEs' tables. Put new detail in docs/, not in the
+READMEs. `docs/screenshot-en.png` and `docs/screenshot-zh.png` are the READMEs' images, each showing the
+page in its README's language, taken from a real Gemma run: if a UI change makes them stale, say so rather
+than leaving them silently outdated.

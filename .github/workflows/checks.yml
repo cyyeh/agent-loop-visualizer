@@ -37,7 +37,7 @@ jobs:
         run: uv run pytest
 
   # What pages.yml runs before it publishes How it works, word for word: keep the two the same. The job above has
-  # every package installed, so it would not notice app/guide.py, app/render.py, agent/i18n.py, agent/model_families/
+  # every package installed, so it would not notice docs/guide/guide.py, app/render.py, agent/i18n.py, agent/model_families/
   # or a package's __init__.py importing torch, transformers, streamlit or httpx; only the Pages build on main would.
   # --isolated keeps uv from reusing a .venv that already has pygments, and with it the whole app: there is none in a
   # fresh checkout, but there is in a checkout where these are run by hand.
@@ -52,4 +52,4 @@ jobs:
       - run: uv run --isolated --no-project --with pygments --with pytest pytest tests/test_guide.py
       # Runs even when the tests failed, so that one push reports both.
       - if: ${{ !cancelled() }}
-        run: uv run --isolated --no-project --with pygments python -m app.guide _site
+        run: uv run --isolated --no-project --with pygments python -m docs.guide _site

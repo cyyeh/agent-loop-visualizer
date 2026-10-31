@@ -17,8 +17,8 @@ from pathlib import Path
 import pytest
 
 from agent.i18n import LANGS
-from app import guide
-from app.guide import Code, Tabs, span, statement_end
+from docs.guide import guide
+from docs.guide.guide import Code, Tabs, span, statement_end
 from html_check import assert_balanced
 
 CODES = [item for sec in guide.SECTIONS for item in guide.parts(sec.body) if isinstance(item, Code)]
@@ -281,7 +281,7 @@ def test_tabs_are_radio_buttons_that_switch_without_a_script(lang):
     css = guide.stylesheet()
     for n in range(1, guide.MAX_TABS + 1):  # the rule that shows only the picked tab's panel
         assert f"label:nth-child({n}) > input:not(:checked)) > .g-panel:nth-child({n + 1})" in css
-    js = (guide.ASSETS / "guide.js").read_text(encoding="utf-8")
+    js = (guide.HERE / "guide.js").read_text(encoding="utf-8")
     assert 'localStorage.setItem("tab-" + kind' in js and 'localStorage.getItem("tab-" + kind)' in js  # each kind's pick holds across the page and visits
 
 

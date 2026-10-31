@@ -1,5 +1,5 @@
-# The commands in AGENTS.md and the READMEs, by name: `just` lists them, `just <name>` runs one. Each is the command
-# the READMEs give, so every one of them also works without just. Recipes run in the project's folder and read the
+# The commands in AGENTS.md, the READMEs and docs/, by name: `just` lists them, `just <name>` runs one. Each is the
+# command those give, so every one of them also works without just. Recipes run in the project's folder and read the
 # environment as those commands do: `MODEL_ID=Qwen/Qwen3.5-0.8B just run` starts on Qwen, `VLLM_URL=... just run` on
 # a vLLM server. Arguments after a name go to the command, quoted as given (`just test -k render`, `just lint --fix`).
 
@@ -38,7 +38,7 @@ check: lint types test guide-check
 lint *args:
     uv run ruff check "$@"
 
-# Check types: agent/ and app/ inside every function, tests/ where annotated
+# Check types: agent/, app/ and docs/ inside every function, tests/ where annotated
 types *args:
     uv run mypy "$@"
 
@@ -64,12 +64,12 @@ test-pi:
 
 # Build How it works: <out>/zh/, <out>/en/ and a redirecting <out>/index.html
 guide out="_site":
-    uv run python -m app.guide "$1"
+    uv run python -m docs.guide "$1"
 
 # Test and build the guide as the Pages workflow does: pygments and pytest alone, not .venv
 guide-check:
     uv run --isolated --no-project --with pygments --with pytest pytest tests/test_guide.py
-    uv run --isolated --no-project --with pygments python -m app.guide _site
+    uv run --isolated --no-project --with pygments python -m docs.guide _site
 
 # Rewrite tests/guide_excerpts.txt, only after rereading in both languages the sections test_guide.py named
 guide-snapshot:

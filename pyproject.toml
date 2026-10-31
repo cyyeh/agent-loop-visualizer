@@ -47,14 +47,14 @@ select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
 ignore = ["B905", "E731"]
 
 [tool.mypy]
-files = ["agent", "app", "tests", "streamlit_app.py"]
+files = ["agent", "app", "docs", "tests", "streamlit_app.py"]
 mypy_path = "tests"
 python_version = "3.11"
 warn_unused_ignores = true
 
 # The app's and the agent's code is checked inside functions without annotations too; the tests' only where annotated.
 [[tool.mypy.overrides]]
-module = ["agent.*", "app.*"]
+module = ["agent.*", "app.*", "docs.*"]
 check_untyped_defs = true
 
 # agent/sandbox/agent_loop_figures.py runs inside the sandbox image, where matplotlib is; the project never installs it.

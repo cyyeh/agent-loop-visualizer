@@ -7,6 +7,6 @@ with run_python's Docker sandbox built from sandbox/. media.py turns the files a
 model reads. model_families/ is everything model-specific, and model_backends/ is what runs the model, behind one interface.
 i18n.py has the page's two languages, which the errors the model reads use too.
 
-Nothing here imports Streamlit, and importing the package loads nothing heavy: the app's guide imports model_families
-and i18n with pygments alone.
+Nothing here imports Streamlit, and importing the package loads nothing heavy: the guide (docs/guide/guide.py) imports
+model_families and i18n with pygments alone.
 """

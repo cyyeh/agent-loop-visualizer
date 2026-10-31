@@ -2,7 +2,8 @@
 
 app/ imports agent/, never the other way round: the agent says what happens only as events, so it runs without the
 page or Streamlit (in these tests, in pi's endpoint, in another app). This reads every file of agent/ for an import
-of either, at the top or inside a function, rather than trusting a reviewer to spot one.
+of either, or of docs/ (the guide, which imports app/), at the top or inside a function, rather than trusting a
+reviewer to spot one.
 """
 
 import ast
@@ -12,7 +13,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 AGENT_FILES = sorted((ROOT / "agent").rglob("*.py"))
-APP_ONLY = ("app", "streamlit")  # what only the page may import
+APP_ONLY = ("app", "docs", "streamlit")  # what only the page, and the guide built from it, may import
 
 
 def imported(path: Path) -> list[tuple[int, str]]:

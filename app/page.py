@@ -24,7 +24,7 @@ vLLM server in Docker from docker-compose/compose.yaml (agent/model_backends/vll
 memory is let go before the next one loads, so switching models or what runs them never holds two.
 
 The top bar also links to 運作說明 (How it works), a walk through the loop with the code behind it:
-a static page that app/guide.py builds and GitHub Pages serves.
+a static page that docs/guide/guide.py builds and GitHub Pages serves.
 
 The page is in Traditional Chinese or English (agent/i18n.py). It starts in the language last picked on the
 switch at the top right, kept in a cookie, or else in the browser's language.
@@ -71,7 +71,7 @@ SAMPLES = ASSETS / "examples"  # the files some examples attach, and the sample 
 # the one every Docker setup (Docker Desktop, OrbStack, Colima) shares with its containers.
 UPLOADS = Path(os.environ.get("AGENT_LOOP_UPLOADS", Path.home() / ".cache" / "agent-loop-visualizer" / "uploads"))
 MAX_UPLOAD_MB = 50
-GUIDE_URL = "https://agentic-system-lab.github.io/agent-loop-visualizer/"  # built from app/guide.py; zh/ and en/ under it are the two languages
+GUIDE_URL = "https://agentic-system-lab.github.io/agent-loop-visualizer/"  # built from docs/guide/guide.py; zh/ and en/ under it are the two languages
 ISSUES_URL = "https://github.com/Agentic-System-Lab/agent-loop-visualizer/issues"  # where a model the page does not support yet can be asked for
 LANG_COOKIE = "agent_loop_lang"  # the language last picked on the switch
 POLL_SECONDS = 0.5
