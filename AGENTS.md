@@ -10,7 +10,7 @@ either the page's own model (served to it over HTTP on 127.0.0.1, every token st
 for (drawn from what pi reports, without tokens). It is a teaching project for the
 Agent Atlas course. The page and its 運作說明 (How it works) guide are in Traditional Chinese and
 English. README.md (English) and README.zh-TW.md (Traditional Chinese) are the overview and the quick start;
-docs/ is the full account (setup, the architecture and its events, decoding and MTP, attachments and the sandbox,
+docs/ is the full account (what the page shows, setup, the architecture and its events, decoding and MTP, attachments and the sandbox,
 vLLM, pi, the tests and the known limits), each page in English beside its .zh-TW.md twin in Chinese; read the
 parts you are about to change.
 
@@ -242,10 +242,10 @@ import Backend`, `from app import render`); pytest puts that folder on the path 
 
 ## Keep the READMEs and docs/ in step
 
-README.md (English) and README.zh-TW.md (Traditional Chinese) stay short: what the project is and does, what
-the page shows, the quick start, the experiments, a table of the pages in docs/, and the license. The detail
-lives in docs/, one page per topic, each `<name>.md` in English beside `<name>.zh-TW.md` in Chinese: setup
-(every requirement, where the models go, the commands by name), architecture (the layout, the event list, the
+README.md (English) and README.zh-TW.md (Traditional Chinese) stay short: what the project is and does, the
+quick start, the experiments, a table of the pages in docs/, and the license. The detail lives in docs/, one
+page per topic, each `<name>.md` in English beside `<name>.zh-TW.md` in Chinese: page (each part of the page,
+what it shows, and its section of the Unit 01 reading), setup (every requirement, where the models go, the commands by name), architecture (the layout, the event list, the
 two languages, adding a model, the models' formats), decoding (the decoding loop, MTP and its measured
 speeds), files (attachments and the sandbox), vllm, pi, testing (a table of what each test file covers) and
 limitations. Each pair says the same things. A change that makes any of it untrue updates both languages in

@@ -6,7 +6,7 @@
 
 ![上方可以切換到「運作說明」頁，右上角可以切換語言，側欄可以選用什麼跑迴圈（內建 harness 或 pi）、模型和用什麼跑它；左邊是對話，輸入框上方是可以拿來問的範例檔案，右邊是迴圈圖與第 1 步的 token。滑鼠停在 <|tool_call> 這個特殊 token 上，浮窗說明它的用途，並顯示它的機率、排名與前 5 名候選](docs/screenshot-zh.png)
 
-這個專案是學習用的：用更直覺、更視覺化的方式，讓你看懂 agent 迴圈在底層怎麼運作。Agent 的聊天框背後跑著一個迴圈：一步接著一步，模型提出動作、harness 去執行，直到停止。一般的聊天 app 只讓你看到問題和答案；這個網頁在每一步發生的當下把它畫出來，細到模型寫下的每一個 token，整個機制攤開在你眼前。畫面上的每個部分都對應 [Agent Atlas 技術與實戰交流](https://agentic-system-lab.github.io/agent-atlas-learning/) unit 01 導讀的一節，本專案就是它的專案之一；[可以試試看的實驗](#可以試試看的實驗)則把這些概念變成可以自己動手試的實驗。
+這個專案是學習用的：用更直覺、更視覺化的方式，讓你看懂 agent 迴圈在底層怎麼運作。Agent 的聊天框背後跑著一個迴圈：一步接著一步，模型提出動作、harness 去執行，直到停止。一般的聊天 app 只讓你看到問題和答案；這個網頁在每一步發生的當下把它畫出來，細到模型寫下的每一個 token，整個機制攤開在你眼前。畫面上的每個部分都對應 [Agent Atlas 技術與實戰交流](https://agentic-system-lab.github.io/agent-atlas-learning/) unit 01 導讀的一節（見「[畫面上看得到什麼](docs/page.zh-TW.md)」），本專案就是它的專案之一；[可以試試看的實驗](#可以試試看的實驗)則把這些概念變成可以自己動手試的實驗。
 
 - **模型**：側欄可以選 [google/gemma-4-E2B-it](https://huggingface.co/google/gemma-4-E2B-it) 或 [Qwen/Qwen3.5-0.8B](https://huggingface.co/Qwen/Qwen3.5-0.8B)，在本機用 Hugging Face `transformers` 推論，或用 [vLLM](https://docs.vllm.ai/) 跑：由側欄在 Docker 裡啟動，或連到你自己的伺服器（「[在 vLLM 上跑模型](docs/vllm.zh-TW.md)」）。兩個模型跑的是同一個 harness，換模型時只有它們的文字格式不同，正好可以對照
 - **Harness**：這個專案自己寫的迴圈（`agent/harnesses/simple_harness.py`），或是 [pi](https://pi.dev) 這個 coding agent 的迴圈；pi 可以問這個網頁的模型，每個 token 照樣畫出來，也可以問 Claude、GPT 或其他它登入過的模型，這時照 pi 回報的事件畫出每一步，看不到 token（「[pi 當 harness](docs/pi.zh-TW.md)」）
@@ -14,19 +14,6 @@
 - **檔案**：附上圖片和影片（兩個模型都行）、聲音（Gemma 4 E2B，也可以直接用麥克風錄音），或在輸入框上方選一個範例檔案；打開「讓模型寫程式」時，模型多一個 `run_python` 工具，在 Docker 沙箱裡執行，讀得到你附上的資料檔，也能畫圖（「[附件與程式沙箱](docs/files.zh-TW.md)」）
 - **兩種語言**：網頁和運作說明都有繁體中文和英文版，預設跟著瀏覽器的語言，右上角可以切換
 - **[運作說明](https://agentic-system-lab.github.io/agent-loop-visualizer/zh/)**：把一輪對話的每一步對應到做這件事的程式碼，每段程式片段點一下就能在 GitHub 上看到那幾行；app 上方的「運作說明」會用網頁當下的語言打開它
-
-## 畫面上看得到什麼
-
-| 畫面 | 看得到的東西 | 對應 unit 01 導讀 |
-|---|---|---|
-| 迴圈圖 | 目前在脈絡、模型、harness、環境、停止哪一格，正在流動的箭頭 | §4 Agent 就是放在迴圈裡的模型 |
-| 脈絡 | 每一步模型讀到的完整字串（pi 問 provider 的模型時，改成 pi 送出的請求，寫成 JSON）：system prompt、工具 schema、對話，以及上一步接回來的工具結果。滑過深色的特殊 token 會說明它的用途。附上的圖片、聲音或影片就是它展開成的那一串 token，畫成一個標籤加上個數（`<\|image\|>` ×266） | §1 脈絡有上限、§3 工具定義也是 token |
-| 模型 | 每個生成的 token，顏色越深代表被選中的 token 機率越低。滑過 token 看機率、排名、前 5 名候選，以及 top-k / top-p 剃掉了哪些。打開 MTP 時，草稿模型猜中的 token 有底線，step 卡片顯示收下幾個。用 vLLM 時，看得到多少要看伺服器開了哪些參數；pi 問 provider 的模型時，只有一段段傳回來的文字 | §1 LLM 是會抽樣的條件機率分布、解碼設定 |
-| Harness | 從模型自己的格式（Gemma 4 或 Qwen3.5）解析出的工具呼叫、schema 驗證結果、重複呼叫警告、你的允許或拒絕 | §3 模型從不直接碰環境 |
-| 環境 | 工具實際回傳的結果與耗時；`run_python` 的程式碼寫在上面，印出來的東西或 traceback 寫在下面 | §2 環境與可觀察的狀態 |
-| 停止 | 停止原因和停止 token。Gemma 回答完停在 `<turn\|>`（相當於 end_turn）、要工具時停在 `<\|tool_response>`（相當於 tool_use）；Qwen 兩種都停在 `<\|im_end\|>`。另外還有步數上限、token 上限、使用者中斷 | §5 什麼時候停 |
-| 模型分頁 | 參數量拆解、層數、注意力頭數和脈絡上限、模型讀得懂什麼、MTP 草稿模型、解碼設定的說明、每一步的 prefill 時間與 tok/s、tokenizer 全部特殊 token（Gemma 24 個、Qwen 33 個），以及 `models/` 裡這個模型資料夾的每個檔案和裡面裝了什麼 | §1、§7 Agent 是系統 |
-| 運作說明頁 | 一輪對話的 18 個階段，每段附上做這件事的程式碼，連到 GitHub 上產生頁面時那個 commit 的那幾行，模型、backend 或 harness 做法不同的地方各有頁籤；每次推上 main 都會重新產生，程式改了會跟著更新 | 全部 |
 
 ## 快速開始
 
@@ -65,6 +52,7 @@ just sandbox    # 選用：「讓模型寫程式」用的沙箱（約 400 MB）�
 
 | 頁面 | 內容 |
 |---|---|
+| [畫面上看得到什麼](docs/page.zh-TW.md) | 畫面上的每個部分、看得到什麼，以及對應 unit 01 導讀的哪一節 |
 | [安裝與設定](docs/setup.zh-TW.md) | 完整的需求、模型放在哪裡、沙箱 image、用 just 跑指令、疑難排解 |
 | [架構](docs/architecture.zh-TW.md) | 兩個套件和它們的檔案、一輪的事件、兩種語言、加入新模型、兩個模型的格式 |
 | [解碼迴圈與 MTP](docs/decoding.zh-TW.md) | 為什麼自己寫解碼迴圈、MTP 怎麼猜和驗證、快了多少 |

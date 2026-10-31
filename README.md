@@ -6,7 +6,7 @@ English | [繁體中文](README.zh-TW.md)
 
 ![The top bar links to the How it works page, the switch at the top right changes the language, and the sidebar picks what runs the loop (the built-in harness or pi), the model and what runs it; on the left is the chat, with the sample files to ask about above the input box, on the right the loop diagram and the tokens of step 1. The pointer rests on the special token <|tool_call>, whose popover says what it is for and shows its probability, its rank and the top 5 candidates.](docs/screenshot-en.png)
 
-This project is for learning: it shows how an agent loop works underneath, in a way more intuitive and visual than reading about it. Behind an agent's chat box runs a loop: step after step, the model proposes an action and the harness carries it out, until it stops. A chat app shows only the question and the answer; this page draws every step as it happens, down to each token the model writes, so the whole mechanism is laid out in front of you. Each part of the page matches a section of the Unit 01 reading of [Agent Atlas](https://agentic-system-lab.github.io/agent-atlas-learning/) (in Traditional Chinese), the course this project belongs to, and [Experiments to try](#experiments-to-try) turns those ideas into things you can try yourself.
+This project is for learning: it shows how an agent loop works underneath, in a way more intuitive and visual than reading about it. Behind an agent's chat box runs a loop: step after step, the model proposes an action and the harness carries it out, until it stops. A chat app shows only the question and the answer; this page draws every step as it happens, down to each token the model writes, so the whole mechanism is laid out in front of you. Each part of the page matches a section of the Unit 01 reading of [Agent Atlas](https://agentic-system-lab.github.io/agent-atlas-learning/) (in Traditional Chinese), the course this project belongs to ([What the page shows](docs/page.md) says which), and [Experiments to try](#experiments-to-try) turns those ideas into things you can try yourself.
 
 - **Models**: [google/gemma-4-E2B-it](https://huggingface.co/google/gemma-4-E2B-it) or [Qwen/Qwen3.5-0.8B](https://huggingface.co/Qwen/Qwen3.5-0.8B), picked in the sidebar, on your machine with Hugging Face `transformers`, or on [vLLM](https://docs.vllm.ai/), in Docker started from the sidebar or on a server of your own ([Running the model on vLLM](docs/vllm.md)). Both run the same harness, so switching models changes only their text formats, which makes them easy to compare
 - **The harness**: this project's own loop (`agent/harnesses/simple_harness.py`), or that of [pi](https://pi.dev), a coding agent, asking the page's model, every token still drawn, or Claude, GPT or another model pi has credentials for, drawn from what pi reports, without tokens ([pi as the harness](docs/pi.md))
@@ -14,19 +14,6 @@ This project is for learning: it shows how an agent loop works underneath, in a 
 - **Files**: attach images and videos (both models) and sound (Gemma 4 E2B, from the microphone too), or pick a sample file above the input box; with Let the model write code on, the model gets a `run_python` tool that runs in a Docker sandbox, reads your data files and draws charts ([Attachments and the code sandbox](docs/files.md))
 - **Two languages**: the page and How it works are in English and Traditional Chinese; they start in your browser's language, and the switch at the top right changes it
 - **[How it works](https://agentic-system-lab.github.io/agent-loop-visualizer/en/)**: maps each step of one turn to the code that does it, each excerpt a click away from its lines on GitHub; How it works at the top of the app opens it in the app's language
-
-## What the page shows
-
-| On the page | What you see | Unit 01 reading (in Chinese) |
-|---|---|---|
-| Loop diagram | Which box you are in (context, model, harness, environment, stop) and the arrow that is flowing | §4 An agent is a model in a loop |
-| Context | The whole string the model reads in each step (with pi on a provider's model, the request pi sent instead, as JSON): the system prompt, the tool schemas, the conversation and the tool result added after the last step. Hovering over a dark special token says what it is for. An attached image, clip or video is the run of tokens it expands into, drawn as one chip with its count (`<\|image\|>` ×266) | §1 The context has a limit, §3 Tool definitions are tokens too |
-| Model | Every generated token, darker the less likely the chosen token was. Hovering over a token shows its probability, its rank, the top 5 candidates and which ones top-k / top-p cut. With MTP on, tokens the drafter guessed right are underlined, and the step card shows how many were kept. On vLLM, as much of this as the server's flags let it send; with pi on a provider's model, only the text as it streams | §1 An LLM samples from a conditional probability distribution; decoding settings |
-| Harness | The tool calls parsed from the model's own format (Gemma 4 or Qwen3.5), the schema check, warnings about repeated calls, and your Allow or Reject | §3 The model never touches the environment |
-| Environment | What the tool really returned and how long it took; for `run_python`, the code is written out above and what it printed, or its traceback, below | §2 The environment and observable state |
-| Stop | Why it stopped and at which token. Gemma stops at `<turn\|>` after an answer (like end_turn) and at `<\|tool_response>` when it wants a tool (like tool_use); Qwen stops at `<\|im_end\|>` either way. Then there are the step limit, the token limit and the user pressing stop | §5 When to stop |
-| Model tab | The parameter breakdown, the layers, attention heads and context limit, what the model reads, the MTP drafter, what each decoding setting does, each step's prefill time and tok/s, every special token of the tokenizer (24 for Gemma, 33 for Qwen), and every file in the model's folder in `models/` with what it holds | §1, §7 An agent is a system |
-| How it works | The 18 stages of one turn, each with the code that does it, linked to its lines on GitHub at the commit the page was built from, with tabs where the models, backends or harnesses differ; rebuilt on every push to main, so it follows the code | All of it |
 
 ## Quick start
 
@@ -65,6 +52,7 @@ Your browser opens http://localhost:8501; loading Gemma takes about 10–20 seco
 
 | Page | What it covers |
 |---|---|
+| [What the page shows](docs/page.md) | Each part of the page, what it shows, and the section of the Unit 01 reading it goes with |
 | [Setup in detail](docs/setup.md) | Every requirement, where the models go, the sandbox image, the commands by name with just, troubleshooting |
 | [Architecture](docs/architecture.md) | The two packages and their files, the events of a turn, the two languages, adding a model, the two models' formats |
 | [The decoding loop and MTP](docs/decoding.md) | Why the decoding loop is hand-written, how MTP guesses and checks, and how much faster it is |
